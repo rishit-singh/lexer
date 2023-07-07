@@ -1,0 +1,26 @@
+#ifndef TOKEN_H_
+#define TOKEN_H_
+
+#include <string_view>
+
+enum class TokenType
+{
+};
+
+class Token
+{
+public:
+    const TokenType Type;
+
+    const std::string_view Lexeme;
+
+    const std::string_view Literal;
+
+    const uint32_t Line;
+
+    Token(const TokenType, std::string_view lexeme, std::string_view literal, uint32_t );
+    ~Token();
+};
+
+
+#endif // TOKEN_H_
