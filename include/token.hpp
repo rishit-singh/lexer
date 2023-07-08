@@ -4,7 +4,11 @@
 #include <string_view>
 
 enum class TokenType
-{};
+{
+    TK_EOF,
+    TK_PARALEFT,
+    TK_PARARIGHT
+};
 
 template<typename T>
 class Token
@@ -22,5 +26,12 @@ public:
     ~Token();
 };
 
+template <typename T>
+Token<T>::Token(const TokenType type, const std::string_view lexeme, const T literal, const uint32_t line)
+    : Type(type), Lexeme(lexeme), Literal(literal), Line(line) {}
+
+
+template <typename T> Token<T>::~Token() {
+}
 
 #endif // TOKEN_H_
