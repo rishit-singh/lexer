@@ -14,7 +14,7 @@ Lexer::~Lexer()
 {
 }
 
-bool Lexer::Match(const char c)
+const bool Lexer::Match(const char c)
 {
     if (this->State.Current >= this->Buffer.size()) // EOF check
         return false;
@@ -28,6 +28,10 @@ bool Lexer::Match(const char c)
     return false;
 }
 
+const bool Lexer::IsEnd() const
+{
+    return (this->State.Current >= this->Buffer.size());
+}
 
 uint32_t Lexer::Seek(const char c)
 {
@@ -36,7 +40,7 @@ uint32_t Lexer::Seek(const char c)
     // ++index;
 
 
-    std::cout << "Index: " << index << '\n';
+    // std::cout << "Index: " << index << '\n';
 
     for (index = this->State.Current; index < this->Buffer.size() && this->Buffer[index] != c; index++);
 
@@ -69,12 +73,14 @@ std::vector<Token<std::string>> Lexer::Scan()
 
             case '"':
             {
-                int i = this->Seek('"');
-
-                if (this->Buffer[i] == '"' && i != start)
-                    tokens.push_back(Token<std::string>(TokenType::TK_STRING, this->Buffer.substr(start + 1, current - 1), "\"\"",  this->State.Line));
-                else
+                if (this->IsEnd())
+                {
                     Error::Report(Error(this->State.Line, "Unterminated string."));
+                    break;
+                }
+
+                if (this->Buffer[this->Seek('"')] == '"')
+                    tokens.push_back(Token<std::string>(TokenType::TK_STRING, this->Buffer.substr(start + 1, current - 1), "\"\"",  this->State.Line));
 
                 break;
             }

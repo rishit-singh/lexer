@@ -27,8 +27,8 @@ private:
     std::string Buffer;
 
     uint32_t Seek(const char);
-    bool Match(const char);
-
+    const bool Match(const char);
+    const bool IsEnd() const;
 public:
     std::vector<Token<std::string>> Scan();
 
