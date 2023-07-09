@@ -5,7 +5,7 @@ LexerState::LexerState(uint32_t start, uint32_t current, uint32_t line)
 
 
 Lexer::Lexer(std::string_view filePath)
-    : HadError(false)
+    : HadError(false), Tokens(std::vector<Token<std::string>>())
 {
     this->Buffer = ReadFile(filePath);
 }
@@ -14,7 +14,7 @@ Lexer::~Lexer()
 {
 }
 
-bool Lexer::Match(const char c)
+bool Lexer::Match(char c)
 {
     if (this->State.Current >= this->Buffer.size()) // EOF check
         return false;
@@ -29,50 +29,42 @@ bool Lexer::Match(const char c)
 }
 
 
-uint32_t Lexer::Seek(const char c)
+uint32_t Lexer::Seek(char c)
 {
     uint32_t& index = this->State.Current;
-
-    // ++index;
-
-
-    std::cout << "Index: " << index << '\n';
-
     for (index = this->State.Current; index < this->Buffer.size() && this->Buffer[index] != c; index++);
 
     return index;
 }
 
 
-std::vector<Token<std::string>> Lexer::Scan()
+void Lexer::Scan()
 {
     uint32_t& current = this->State.Current,
         &start = this->State.Start;
 
-    std::vector<Token<std::string>> tokens = std::vector<Token<std::string>>();
-
     char c;
 
-    for (int current = 0; current < this->Buffer.size(); start = current)
+    for (int x = 0; x < this->Buffer.size(); x++, start = current)
     {
         switch (c = this->Buffer[current++])
         {
             case '(':
-                tokens.push_back(Token<std::string>(TokenType::TK_PARALEFT, this->Buffer.substr(start, current), "", this->State.Line));
+               this->Tokens.push_back(Token<std::string>(TokenType::TK_PARALEFT, this->Buffer.substr(start, current), "", this->State.Line));
 
                 break;
 
             case ')':
-               tokens.push_back(Token<std::string>(TokenType::TK_PARARIGHT, this->Buffer.substr(start, current), "", this->State.Line));
+               this->Tokens.push_back(Token<std::string>(TokenType::TK_PARARIGHT, this->Buffer.substr(start, current), "", this->State.Line));
 
                break;
 
             case '"':
             {
-                int i = this->Seek('"');
+                int i = Seek('"');
 
-                if (this->Buffer[i] == '"' && i != start)
-                    tokens.push_back(Token<std::string>(TokenType::TK_STRING, this->Buffer.substr(start + 1, current - 1), "\"\"",  this->State.Line));
+                if (this->Buffer[this->Seek('"')] == '"')
+                    this->Tokens.push_back(Token<std::string>(TokenType::TK_STRING, this->Buffer.substr(start + 1, current - 1), "\"\"",  this->State.Line));
                 else
                     Error::Report(Error(this->State.Line, "Unterminated string."));
 
@@ -92,12 +84,13 @@ std::vector<Token<std::string>> Lexer::Scan()
 
                 this->HadError = true;
 
-
                 break;
         }
     }
 
+//    this->Tokens.push_back(Token<std::string_view>(TokenType::TK_EOF, nullptr, "\0", this->State.Line));
+}
 
-    return tokens;
-//    tokens.push_back(Token<std::string_view>(TokenType::TK_EOF, nullptr, "\0", this->State.Line));
+const std::vector<Token<std::string>> &Lexer::GetTokens() {
+    return this->Tokens;
 }

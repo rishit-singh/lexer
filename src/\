@@ -1,0 +1,77 @@
+#include "lexer.hpp"
+
+LexerState::LexerState(uint32_t start, uint32_t current, uint32_t line)
+    : Start(start), Current(current), Line(line) {}
+
+
+Lexer::Lexer(std::string_view filePath)
+    : HadError(false), Tokens(std::vector<Token<std::string>>())
+{
+    this->Buffer = ReadFile(filePath);
+}
+
+Lexer::~Lexer()
+{
+}
+
+bool Lexer::Match(char c)
+{
+    if (this->State.Current >= this->Buffer.size()) // EOF check
+        return false;
+
+    if (this->Buffer[this->State.Current] == c)
+    {
+        this->State.Current++;
+        return true;
+    }
+
+    return false;
+}
+
+void Lexer::Scan()
+{
+    uint32_t& current = this->State.Current,
+        &start = this->State.Start;
+
+    char c;
+
+    for (int x = 0; x < this->Buffer.size(); x++, start = current)
+    {
+        switch (c = this->Buffer[current++])
+        {
+            case '(':
+               this->Tokens.push_back(Token<std::string>(TokenType::TK_PARALEFT, this->Buffer.substr(start, current), "", this->State.Line));
+
+                break;
+
+            case ')':
+               this->Tokens.push_back(Token<std::string>(TokenType::TK_PARARIGHT, this->Buffer.substr(start, current), "", this->State.Line));
+
+               break;
+
+            case '"':
+                break;
+
+            case '\n':
+                this->State.Line++;
+                break;
+
+            default:
+                std::string message = "Unexpected token ";
+
+                message += c;
+
+                Error::Report(Error(this->State.Line, message));
+
+                this->HadError = true;
+
+                break;
+        }
+    }
+
+//    this->Tokens.push_back(Token<std::string_view>(TokenType::TK_EOF, nullptr, "\0", this->State.Line));
+}
+
+const std::vector<Token<std::string>> &Lexer::GetTokens() {
+    return this->Tokens;
+}

@@ -14,7 +14,7 @@ struct LexerState
 
     uint32_t Line;
 
-    LexerState(uint32_t = 0, uint32_t = 0, uint32_t = 1);
+    LexerState(const uint32_t = 0, const uint32_t = 0, const uint32_t = 1);
 };
 
 class Lexer
@@ -24,14 +24,13 @@ private:
 
     LexerState State;
 
-    std::vector<Token<int> > Tokens;
+    std::string Buffer;
 
-    std::string_view Buffer;
+    uint32_t Seek(const char);
+    bool Match(const char);
 
 public:
-    void Scan();
-
-    const std::vector<Token<int> >& GetTokens();
+    std::vector<Token<std::string>> Scan();
 
     Lexer(std::string_view);
     ~Lexer();

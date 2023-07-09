@@ -5,10 +5,8 @@ int main(int argc, char** argv)
 {
     Lexer lex = Lexer(argv[1]);
 
-    lex.Scan();
 
-
-    const std::vector<Token<int> >& tokens = lex.GetTokens();
+    const std::vector<Token<std::string>> tokens = lex.Scan();
 
     for (int x = 0; x < tokens.size(); x++)
         std::cout << tokens[x].Lexeme;
